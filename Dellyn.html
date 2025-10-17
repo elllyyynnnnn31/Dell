@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Hadir XII-4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fce7f3, #f9a8d4);
+      color: #4a044e;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.6);
+      border: 2px solid #f472b6;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 10px 25px rgba(244, 114, 182, 0.4);
+    }
+    input, select {
+      background: white;
+      color: #4a044e;
+      border: 1px solid #f9a8d4;
+    }
+    input:focus, select:focus {
+      outline: 2px solid #ec4899;
+    }
+    button {
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      transform: scale(1.03);
+    }
+    #dataList::-webkit-scrollbar {
+      width: 6px;
+    }
+    #dataList::-webkit-scrollbar-thumb {
+      background: #f472b6;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card w-full max-w-lg p-6 rounded-2xl">
+    <h1 class="text-3xl font-bold text-center mb-6 tracking-wide text-pink-700">💖 Daftar Hadir XII-4 💖</h1>
+
+    <form id="absenForm" class="space-y-4">
+      <div>
+        <label class="block mb-1 text-sm font-medium">Nama Lengkap</label>
+        <input type="text" name="nama" id="nama" placeholder="Masukkan nama kamu" class="w-full p-3 rounded-lg" required>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium">Tanggal</label>
+        <input type="date" name="tanggal" id="tanggal" class="w-full p-3 rounded-lg" required>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium">Status Kehadiran</label>
+        <select name="status" id="status" class="w-full p-3 rounded-lg" required>
+          <option value="">-- Pilih status --</option>
+          <option value="HADIR">Hadir</option>
+          <option value="SAKIT">Sakit</option>
+          <option value="IZIN">Izin</option>
+          <option value="ALFA">Alfa</option>
+        </select>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="saveLocal" class="w-1/2 bg-pink-500 hover:bg-pink-600 p-3 rounded-xl font-semibold text-white">💾 Simpan di Web</button>
+        <button type="button" id="sendCloud" class="w-1/2 bg-fuchsia-500 hover:bg-fuchsia-600 p-3 rounded-xl font-semibold text-white">☁️ Kirim ke Spreadsheet</button>
+      </div>
+
+      <button type="button" id="resetLocal" class="w-full mt-2 bg-rose-400 hover:bg-rose-500 p-3 rounded-xl font-semibold text-white">🧹 Reset Data Web</button>
+    </form>
+
+    <p id="statusMsg" class="text-center mt-4 text-sm text-pink-800 font-medium"></p>
+
+    <h2 class="text-lg font-semibold mt-8 mb-2 text-center text-pink-700">📜 Data yang Tersimpan di Web</h2>
+    <div id="dataList" class="overflow-y-auto max-h-64 bg-pink-100 rounded-lg p-3 text-sm text-pink-900"></div>
+
+    <div class="text-center mt-4">
+      <a href="https://docs.google.com/spreadsheets/d/1p_Cr_OccCGbaynYnFgVpghrB4cdWb80Xaayg66nXgLg/edit?usp=drivesdk" 
+         target="_blank"
+         class="underline text-pink-700 hover:text-pink-900">📄 Lihat Spreadsheet</a>
+    </div>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxGPbt9Il8ImOFlwrryzZ6yV0k51BIsB4T5NI_jVIDS2qg3qU4_tO3rUJLDJWEUi9uq/exec";
+    const form = document.getElementById("absenForm");
+    const statusMsg = document.getElementById("statusMsg");
+    const dataList = document.getElementById("dataList");
+    const saveLocal = document.getElementById("saveLocal");
+    const sendCloud = document.getElementById("sendCloud");
+    const resetLocal = document.getElementById("resetLocal");
+
+    // ===== Local storage =====
+    function loadLocalData() {
+      return JSON.parse(localStorage.getItem("absensiXII4") || "[]");
+    }
+
+    function saveLocalData(data) {
+      localStorage.setItem("absensiXII4", JSON.stringify(data));
+    }
+
+    function renderData() {
+      const data = loadLocalData();
+      dataList.innerHTML = data.length === 0
+        ? "<p class='text-center text-pink-500 italic'>Belum ada data disimpan 💫</p>"
+        : data.map((d) =>
+            `<div class='border-b border-pink-300 py-1 flex justify-between'>
+              <span>🌷 ${d.nama}</span>
+              <span class="italic text-sm">${d.status}</span>
+            </div>`
+          ).join("");
+    }
+
+    // ===== Simpan di Web =====
+    saveLocal.addEventListener("click", () => {
+      const nama = document.getElementById("nama").value.trim();
+      const tanggal = document.getElementById("tanggal").value;
+      const status = document.getElementById("status").value;
+
+      if (!nama || !tanggal || !status) {
+        statusMsg.textContent = "⚠️ Lengkapi semua data terlebih dahulu!";
+        return;
+      }
+
+      const data = loadLocalData();
+      data.push({ nama, tanggal, status });
+      saveLocalData(data);
+      renderData();
+      form.reset();
+      statusMsg.textContent = "💖 Data berhasil disimpan di web!";
+    });
+
+    // ===== Kirim ke Spreadsheet (spasi normal fix) =====
+    sendCloud.addEventListener("click", async () => {
+      const data = loadLocalData();
+      if (data.length === 0) {
+        statusMsg.textContent = "⚠️ Belum ada data untuk dikirim!";
+        return;
+      }
+
+      statusMsg.textContent = "☁️ Mengirim data ke Spreadsheet...";
+      let success = 0;
+
+      for (const d of data) {
+        // Gunakan FormData agar spasi tetap normal
+        const formData = new FormData();
+        formData.append("nama", d.nama);
+        formData.append("tanggal", d.tanggal);
+        formData.append("hadir", d.status === "HADIR" ? "✔" : "");
+        formData.append("izin", d.status === "IZIN" ? "✔" : "");
+        formData.append("sakit", d.status === "SAKIT" ? "✔" : "");
+        formData.append("alfa", d.status === "ALFA" ? "✔" : "");
+
+        try {
+          const res = await fetch(scriptURL, { method: "POST", body: formData });
+          const result = await res.json();
+          if (result.status === "success") success++;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      statusMsg.textContent = `✅ ${success} data berhasil dikirim ke Spreadsheet!`;
+    });
+
+    // ===== Reset Data Lokal =====
+    resetLocal.addEventListener("click", () => {
+      if (confirm("Apakah kamu yakin ingin menghapus semua data di web? 💭")) {
+        localStorage.removeItem("absensiXII4");
+        renderData();
+        statusMsg.textContent = "🧹 Semua data web telah dihapus!";
+      }
+    });
+
+    renderData();
+  </script>
+</body>
+</html>
